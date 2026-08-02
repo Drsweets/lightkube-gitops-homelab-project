@@ -3,7 +3,10 @@ kind: Ingress
 metadata:
   name: nginx-demo
   namespace: default
+
 spec:
+  ingressClassName: traefik
+
   rules:
     - host: nginx.local
       http:
