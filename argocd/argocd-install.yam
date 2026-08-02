@@ -1,0 +1,6 @@
+# Official ArgoCD v2.11 install manifest
+# Source: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
