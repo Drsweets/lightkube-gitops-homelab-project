@@ -1,6 +1,13 @@
 # Kubeconfig secrets
 kubeconfig
+kubeconfig/
 *.kubeconfig
+*.kubeconfig.*
+
+# Env secrets - CRITICAL for GitOps, prevents secret leakage
+.env
+*.env
+!*.env.example
 
 # Ansible artifacts
 *.retry
@@ -10,6 +17,28 @@ kubeconfig
 .idea/
 *.swp
 *.swo
+*~
+
+# Backup/temp files
+*.bak
+*.tmp
+*.temp
+
+# Python cache (LightKube Python client)
+__pycache__/
+*.pyc
+*.pyo
 
 # OS junk
 .DS_Store
+Thumbs.db
+
+# Local build artifacts (kustomize build local test outputs)
+build/
+tmp/
+
+# Terraform (optional, keep if you may add terraform later)
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
