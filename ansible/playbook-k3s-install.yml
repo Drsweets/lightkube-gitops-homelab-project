@@ -1,0 +1,37 @@
+---
+- name: Bootstrap single-node K3s Ubuntu host
+  hosts: cluster_nodes
+  become: true
+  vars_files:
+    - vars/main.yml
+  tasks:
+    - name: Install system dependencies
+      apt:
+        name:
+          - curl
+          - gnupg
+          - lsb-release
+        update_cache: yes
+
+    - name: Install K3s Server
+      shell: >
+        curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh |
+        INSTALL_K3S_VERSION={{ k3s_version }}
+        INSTALL_K3S_EXEC="server {{ k3s_server_args }}"
+        sh -
+      args:
+        executable: /bin/bash
+
+    - name: Copy kubeconfig to regular user home directory
+      copy:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: /home/{{ ansible_user }}/.kube/config
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
+
+    - name: Fetch kubeconfig file to local workstation
+      fetch:
+        src: /home/{{ ansible_user }}/.kube/config
+        dest: ./kubeconfig
+        flat: yes
