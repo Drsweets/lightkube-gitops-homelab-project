@@ -248,11 +248,20 @@ cat ~/.ssh/argocd-git.pub
 
 Create a Kubernetes Secret containing SSH credentials for ArgoCD:
 ```bash
-kubectl create secret generic argocd-github-ssh \
-  -n argocd \
-  --from-file=ssh-privatekey=~/.ssh/argocd-git \
-  --from-literal=knownHosts="github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81f6NvPxCeehhlpNujzbDmzaAhoUkniXB045EtjuVpw7MIh8lTLWXcrsWHFdKJPH2l8PNizg2Ux3fmT4nCYuqU5RxcVFA6bAiDYksq24TfrFSe2MjHKC2T4khkNX7AnQj73KuDNCZXAuW2z0muo6lbCuVvAfui3MjMxMk54GftzHq6P4um6awpZhEvz4EZSXuyZfqmqzhIbNsM5YVbVqDV5HkvN1ercw=="
-```
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-github-ssh
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  type: git
+  url: git@github.com:Drsweets/lightkube-gitops-homelab-project.git
+  sshPrivateKey: |
+$(sed 's/^/    /' ~/.ssh/argocd-git)
+EOF
 
 ### Deploy ArgoCD Root Application (App-of-Apps)
 
