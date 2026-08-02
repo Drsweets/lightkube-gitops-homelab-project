@@ -205,7 +205,7 @@ Expected result: Your single node appears with `Ready` status.
 
 ```bash
 kubectl apply -f argocd/argocd-namespace.yaml
-kubectl apply -f argocd/argocd-install.yaml
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 kubectl get pods -n argocd --watch
 ```
