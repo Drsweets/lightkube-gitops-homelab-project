@@ -3,7 +3,10 @@ kind: Ingress
 metadata:
   name: whoami-demo
   namespace: default
+
 spec:
+  ingressClassName: traefik
+
   rules:
     - host: whoami.local
       http:
