@@ -4,6 +4,7 @@
   become: true
   vars_files:
     - vars/main.yml
+
   tasks:
     - name: Install system dependencies
       apt:
@@ -21,6 +22,14 @@
         sh -
       args:
         executable: /bin/bash
+
+    - name: Ensure .kube directory exists
+      file:
+        path: "/home/{{ ansible_user }}/.kube"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
 
     - name: Copy kubeconfig to regular user home directory
       copy:
