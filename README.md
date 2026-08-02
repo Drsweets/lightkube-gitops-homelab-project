@@ -1,5 +1,31 @@
+This project provides a lightweight Kubernetes GitOps stack for single-node self-hosting. Built with:
+
+- **Ubuntu 24.04 LTS** – Full Linux, SSH accessible
+- **K3s** – Lightweight certified Kubernetes distribution
+- **Ansible** – Automated node bootstrapping
+- **ArgoCD** – GitOps continuous deployment
+- **App-of-Apps Pattern** – Standard GitOps architecture
+
+**Core GitOps Principle:** All Kubernetes YAML lives in Git → ArgoCD automatically syncs cluster state → No manual `kubectl apply` after initial setup.
+
+---
+
+## Minimum Hardware
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| VM / Mini PC | 1 | 1 |
+| RAM | 6GB | 8GB |
+| Disk | 40GB SSD | 40GB SSD |
+| Network | Static local IP | Static local IP |
+
+---
+
+## Local Workstation Dependencies
+
 Set up these utilities on your laptop (Ubuntu / WSL2 / macOS):
 
+```bash
 # Install Ansible
 pip install ansible-core
 
@@ -15,87 +41,200 @@ chmod +x argocd && sudo mv argocd /usr/local/bin/
 kubectl version --client
 argocd version
 ansible --version
+```
 
+**Windows users:** Use WSL2 for all commands.
 
-Confirm the VM uses a static IP address
+---
 
-Allow HTTP/HTTPS traffic within Ubuntu firewall:
+## Repository Structure
 
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
+```
+lightkube-gitops-homelab-project/
+├── ansible/                         # Node bootstrap automation
+│   ├── inventory.ini
+│   ├── playbook-k3s-install.yml
+│   └── vars/
+│       └── main.yml
+├── argocd/                          # ArgoCD core manifests
+│   ├── argocd-namespace.yaml
+│   ├── argocd-install.yaml
+│   └── app-of-apps/                 # App-of-Apps pattern (GitOps root)
+│       ├── kustomization.yaml
+│       └── root-application.yaml
+├── clusters/
+│   └── single-node/                 # Cluster environment configuration
+│       ├── kustomization.yaml
+│       ├── infrastructure/          # Base cluster services
+│       │   ├── traefik/
+│       │   ├── kustomization.yaml
+│       └── applications/            # User workloads
+│           ├── nginx-demo/
+│           ├── whoami-demo/
+│           └── kustomization.yaml
+├── .gitignore
+└── README.md
+```
 
+**App-of-Apps Pattern Explained:** One root Application deploys all other infrastructure & workload manifests – the standard GitOps architecture.
+
+---
+
+## Deployment Guide
+
+### Prepare Clean Ubuntu 24.04 LTS VM
+
+Deploy fresh Ubuntu Server 24.04 LTS (no desktop) and configure a static IP address on your VM (example: `192.168.1.100`). Enable OpenSSH server during installation and create a regular user with sudo privileges (example: `ubuntu`).
+
+From your local workstation, test SSH connectivity:
+
+```bash
+ssh ubuntu@192.168.1.100
+```
+
+On the VM, update the base system and configure firewall:
+
+```bash
 sudo apt update && sudo apt upgrade -y
 sudo apt install openssh-server ca-certificates curl -y
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+```
 
-git clone git@github.com:YOUR_USERNAME/lightkube-gitops-homelab-project/
+### Clone Your GitHub Repository
 
+```bash
+git clone git@github.com:YOUR_USERNAME/lightkube-gitops-homelab-project.git
 cd lightkube-gitops-homelab-project
+```
 
-Execute the Ansible Playbook
+### Configure Ansible & Bootstrap K3s
 
+**Edit Ansible Inventory (`ansible/inventory.ini`):**
+```ini
+[cluster_nodes]
+k3s-node ansible_host=192.168.1.100 ansible_user=ubuntu
+```
+
+**Ansible Variables (`ansible/vars/main.yml`):**
+```yaml
+k3s_version: v1.30.2+k3s1
+k3s_server_args: >-
+  --disable servicelb
+  --disable traefik
+  --tls-san 192.168.1.100
+containerd_mirror: true  # Enable China registry mirrors
+```
+
+**Ansible Playbook (`ansible/playbook-k3s-install.yml`):**
+```yaml
+---
+- name: Bootstrap single-node K3s Ubuntu host
+  hosts: cluster_nodes
+  become: true
+  vars_files:
+    - vars/main.yml
+  tasks:
+    - name: Install system dependencies
+      apt:
+        name:
+          - curl
+          - gnupg
+          - lsb-release
+        update_cache: yes
+
+    - name: Install K3s Server
+      shell: >
+        curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh |
+        INSTALL_K3S_VERSION={{ k3s_version }}
+        INSTALL_K3S_EXEC="server {{ k3s_server_args }}"
+        sh -
+      args:
+        executable: /bin/bash
+
+    - name: Copy kubeconfig to user home
+      copy:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: /home/{{ ansible_user }}/.kube/config
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
+
+    - name: Fetch kubeconfig to local workstation
+      fetch:
+        src: /home/{{ ansible_user }}/.kube/config
+        dest: ./kubeconfig
+        flat: yes
+```
+
+**Execute the Ansible Playbook:**
+```bash
 cd ansible
 ansible-playbook -i inventory.ini playbook-k3s-install.yml
+```
 
 After successful execution:
+```bash
 cp ansible/kubeconfig ~/.kube/config
 # Verify cluster connection
 kubectl get nodes
+```
 
-Expected result: Your single node appears with Ready status.
+Expected result: Your single node appears with `Ready` status.
 
-Deploy ArgoCD to the K3s Cluster
+### Deploy ArgoCD to the K3s Cluster
 
+```bash
 # Create namespace and install ArgoCD
 kubectl apply -f argocd/argocd-namespace.yaml
 kubectl apply -f argocd/argocd-install.yaml
 
 # Watch pod startup progress (approximately 3–5 minutes)
 kubectl get pods -n argocd --watch
-
+```
 
 Retrieve the initial ArgoCD admin password:
-
+```bash
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
+```
 
 Access the ArgoCD UI via temporary port-forward:
-
-kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
-
-Access the ArgoCD UI via temporary port-forward:
-
+```bash
 kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
 
-Visit: https://localhost:8080 | Username: admin
+Visit: `https://localhost:8080` | Username: `admin`
 
-Step 5: Authenticate ArgoCD to GitHub (Critical Step)
+### Authenticate ArgoCD to GitHub (Critical Step)
 
-Recommended Option: Use a private GitHub repository
+**Recommended Option: Use a private GitHub repository**
 
 Generate an SSH key without a passphrase:
-
+```bash
 ssh-keygen -t ed25519 -N "" -f ~/.ssh/argocd-git
+```
 
 Copy the public key and add it as a Deploy Key inside your GitHub repository:
-
+```bash
 cat ~/.ssh/argocd-git.pub
+```
 
 Create a Kubernetes Secret containing SSH credentials for ArgoCD:
-
+```bash
 kubectl create secret generic argocd-github-ssh \
   -n argocd \
   --from-file=ssh-privatekey=~/.ssh/argocd-git \
   --from-literal=knownHosts="github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81f6NvPxCeehhlpNujzbDmzaAhoUkniXB045EtjuVpw7MIh8lTLWXcrsWHFdKJPH2l8PNizg2Ux3fmT4nCYuqU5RxcVFA6bAiDYksq24TfrFSe2MjHKC2T4khkNX7AnQj73KuDNCZXAuW2z0muo6lbCuVvAfui3MjMxMk54GftzHq6P4um6awpZhEvz4EZSXuyZfqmqzhIbNsM5YVbVqDV5HkvN1ercw=="
+```
 
-Step 6: Deploy ArgoCD Root Application (App-of-Apps)
+### Deploy ArgoCD Root Application (App-of-Apps)
 
-Edit argocd/app-of-apps/root-application.yaml and replace the following values:
+Edit `argocd/app-of-apps/root-application.yaml` and replace the following values:
+- `repoURL`: SSH URL of your GitHub repository
+- `targetRevision`: `main`
+- `path`: `clusters/single-node`
 
-repoURL: SSH URL of your GitHub repository
-
-targetRevision: main
-
-path: clusters/single-node
-
+```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -104,7 +243,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:YOUR_USERNAME/k3s-gitops-starter.git
+    repoURL: git@github.com:YOUR_USERNAME/lightkube-gitops-homelab-project.git
     targetRevision: main
     path: clusters/single-node
   destination:
@@ -116,52 +255,105 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+```
 
-
+Apply the root application:
+```bash
 kubectl apply -f argocd/app-of-apps/root-application.yaml
+```
 
- Verify GitOps Synchronisation
- 
-Open the ArgoCD UI. You will see root-app automatically provision all infrastructure components and demo workloads.
+### Verify GitOps Synchronisation
+
+Open the ArgoCD UI. You will see `root-app` automatically provision all infrastructure components and demo workloads.
 
 List all managed applications:
-
+```bash
 argocd app list -n argocd
+```
 
-Test the End-to-End GitOps Workflow
+### Test the End-to-End GitOps Workflow
 
 This test confirms your GitOps pipeline functions correctly:
 
-Modify a manifest locally (e.g., change replica count inside clusters/single-node/applications/whoami-demo/deployment.yaml from 1 to 2)
-
-Commit and push changes to GitHub:
-
+1. Modify a manifest locally (e.g., change replica count inside `clusters/single-node/applications/whoami-demo/deployment.yaml` from `1` to `2`)
+2. Commit and push changes to GitHub:
+```bash
 git add .
 git commit -m "Scale whoami to 2 replicas for GitOps validation"
 git push origin main
-
-Wait roughly 60 seconds — ArgoCD detects the Git change and rolls out updates automatically
-
-Confirm changes on the cluste
-
+```
+3. Wait roughly 60 seconds — ArgoCD detects the Git change and rolls out updates automatically
+4. Confirm changes on the cluster:
+```bash
 kubectl get deploy whoami-demo
+```
 
-✅ Success indicator: No manual kubectl apply required. Git acts as the single source of truth for cluster state.
+✅ **Success indicator:** No manual `kubectl apply` required. Git acts as the single source of truth for cluster state.
 
-Step 9: Configure Ingress & Local DNS
+### Configure Ingress & Local DNS
 
-Traefik will be deployed from manifests located at clusters/single-node/infrastructure/traefik.
+Traefik will be deployed from manifests located at `clusters/single-node/infrastructure/traefik`.
 
 Retrieve Traefik service IP:
-
+```bash
 kubectl get svc traefik -n traefik
+```
 
-Update your workstation’s /etc/hosts file for local domain resolution:
-
+Update your workstation's `/etc/hosts` file for local domain resolution:
+```plaintext
 192.168.1.100 whoami.local nginx.local
+```
 
-Useful Debug Commands
+---
 
+## Core GitOps Workflow
+
+- Edit Kubernetes YAML locally
+- Git commit & push to GitHub
+- ArgoCD detects change automatically
+- Cluster state updates without manual `kubectl` commands
+
+---
+
+## Learning Objectives
+
+- Kubernetes fundamental resources (Namespace, Deployment, Service, Ingress, PVC)
+- Lightweight K3s operation
+- GitOps methodology
+- Kustomize resource management
+- ArgoCD App-of-Apps architecture
+- Ingress, DNS, network configuration
+- Infrastructure automation with Ansible
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**ArgoCD cannot connect to GitHub private repo**
+- Verify deploy key added to GitHub
+- Check secret `argocd-github-ssh` exists in `argocd` namespace
+- Confirm repo URL uses SSH format `git@github.com:...`, not HTTPS
+
+**Pod image pull stuck (China network)**
+- The Ansible playbook enables containerd mirror. If still failing, add docker mirror registry inside `/etc/rancher/k3s/registries.yaml`
+
+**ArgoCD OutOfSync errors**
+- Ensure `syncPolicy: automated: prune: true selfHeal: true`
+- Never manually edit resources inside cluster – always edit Git manifests
+
+**Ingress cannot reach service**
+- Confirm static VM IP
+- Verify firewall on Ubuntu allows ports 80/443:
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+```
+
+### Useful Debug Commands
+
+```bash
 # Check ArgoCD application sync status
 argocd app get root-app
 
@@ -170,3 +362,7 @@ argocd repo list
 
 # Inspect ArgoCD controller logs
 kubectl logs -n argocd deploy/argocd-application-controller
+```
+
+---
+
