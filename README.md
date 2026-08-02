@@ -26,6 +26,33 @@ This project provides a lightweight Kubernetes GitOps stack for single-node self
 Set up these utilities on your laptop (Ubuntu / WSL2 / macOS):
 
 ```bash
+mkdir -p ~/gitops
+cd ~/gitops
+git clone https://github.com/Drsweets/lightkube-gitops-homelab-project.git
+cd lightkube-gitops-homelab-project
+
+# Install required tools
+sudo apt update && sudo apt install -y kustomize yamllint
+curl -s https://fluxcd.io/install.sh | sudo bash
+
+# Write all errors into scan.log
+> scan.log
+echo "==== YAML LINT RESULTS ====" >> scan.log
+yamllint . >> scan.log 2>&1
+
+echo -e "\n==== KUSTOMIZE BUILD TESTS ====" >> scan.log
+find . -name kustomization.yaml -print0 | while IFS= read -r -d '' file; do
+  dir=$(dirname "$file")
+  echo "Build test: $dir" >> scan.log
+  kustomize build "$dir" >> scan.log 2>&1 || echo "FAILED: $dir" >> scan.log
+done
+
+echo -e "\n==== FLUX VALIDATION ====" >> scan.log
+flux validate sources >> scan.log 2>&1
+flux validate kustomizations >> scan.log 2>&1
+
+# Print results
+cat scan.log
 # Install Ansible
 pip install ansible-core
 
