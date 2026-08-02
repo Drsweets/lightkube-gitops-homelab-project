@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:YOUR_USERNAME/k3s-gitops-starter.git
+    repoURL: git@github.com:Drsweets/lightkube-gitops-homelab-project.git
     targetRevision: main
     path: clusters/single-node
   destination:
