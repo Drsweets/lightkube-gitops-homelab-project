@@ -31,11 +31,9 @@ cd ~/gitops
 git clone https://github.com/Drsweets/lightkube-gitops-homelab-project.git
 cd lightkube-gitops-homelab-project
 
-# Install required tools
 sudo apt update && sudo apt install -y kustomize yamllint
 curl -s https://fluxcd.io/install.sh | sudo bash
 
-# Write all errors into scan.log
 > scan.log
 echo "==== YAML LINT RESULTS ====" >> scan.log
 yamllint . >> scan.log 2>&1
@@ -51,20 +49,15 @@ echo -e "\n==== FLUX VALIDATION ====" >> scan.log
 flux validate sources >> scan.log 2>&1
 flux validate kustomizations >> scan.log 2>&1
 
-# Print results
 cat scan.log
-# Install Ansible
 pip install ansible-core
 
-# Install kubectl
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
-# Install ArgoCD CLI
 curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
 chmod +x argocd && sudo mv argocd /usr/local/bin/
 
-# Validate installations
 kubectl version --client
 argocd version
 ansible --version
@@ -78,24 +71,24 @@ ansible --version
 
 ```
 lightkube-gitops-homelab-project/
-├── ansible/                         # Node bootstrap automation
+├── ansible/
 │   ├── inventory.ini
 │   ├── playbook-k3s-install.yml
 │   └── vars/
 │       └── main.yml
-├── argocd/                          # ArgoCD core manifests
+├── argocd/
 │   ├── argocd-namespace.yaml
 │   ├── argocd-install.yaml
-│   └── app-of-apps/                 # App-of-Apps pattern (GitOps root)
+│   └── app-of-apps/
 │       ├── kustomization.yaml
 │       └── root-application.yaml
 ├── clusters/
-│   └── single-node/                 # Cluster environment configuration
+│   └── single-node/
 │       ├── kustomization.yaml
-│       ├── infrastructure/          # Base cluster services
+│       ├── infrastructure/
 │       │   ├── traefik/
 │       │   ├── kustomization.yaml
-│       └── applications/            # User workloads
+│       └── applications/
 │           ├── nginx-demo/
 │           ├── whoami-demo/
 │           └── kustomization.yaml
@@ -150,7 +143,7 @@ k3s_server_args: >-
   --disable servicelb
   --disable traefik
   --tls-san 192.168.1.100
-containerd_mirror: true  # Enable China registry mirrors
+containerd_mirror: true
 ```
 
 **Ansible Playbook (`ansible/playbook-k3s-install.yml`):**
@@ -203,7 +196,6 @@ ansible-playbook -i inventory.ini playbook-k3s-install.yml
 After successful execution:
 ```bash
 cp ansible/kubeconfig ~/.kube/config
-# Verify cluster connection
 kubectl get nodes
 ```
 
@@ -212,11 +204,9 @@ Expected result: Your single node appears with `Ready` status.
 ### Deploy ArgoCD to the K3s Cluster
 
 ```bash
-# Create namespace and install ArgoCD
 kubectl apply -f argocd/argocd-namespace.yaml
 kubectl apply -f argocd/argocd-install.yaml
 
-# Watch pod startup progress (approximately 3–5 minutes)
 kubectl get pods -n argocd --watch
 ```
 
@@ -262,6 +252,7 @@ stringData:
   sshPrivateKey: |
 $(sed 's/^/    /' ~/.ssh/argocd-git)
 EOF
+```
 
 ### Deploy ArgoCD Root Application (App-of-Apps)
 
@@ -390,15 +381,9 @@ sudo ufw allow 443/tcp
 ### Useful Debug Commands
 
 ```bash
-# Check ArgoCD application sync status
 argocd app get root-app
-
-# List configured Git repository connections
 argocd repo list
-
-# Inspect ArgoCD controller logs
 kubectl logs -n argocd deploy/argocd-application-controller
 ```
 
 ---
-
