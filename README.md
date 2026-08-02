@@ -78,7 +78,6 @@ lightkube-gitops-homelab-project/
 │       └── main.yml
 ├── argocd/
 │   ├── argocd-namespace.yaml
-│   ├── argocd-install.yaml
 │   └── app-of-apps/
 │       ├── kustomization.yaml
 │       └── root-application.yaml
