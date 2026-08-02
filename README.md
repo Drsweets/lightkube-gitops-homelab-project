@@ -140,7 +140,6 @@ k3s-node ansible_host=192.168.1.100 ansible_user=ubuntu
 ```yaml
 k3s_version: v1.30.2+k3s1
 k3s_server_args: >-
-  --disable servicelb
   --disable traefik
   --tls-san 192.168.1.100
 containerd_mirror: true
