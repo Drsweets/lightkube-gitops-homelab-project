@@ -1,3 +1,4 @@
+```
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,51 +9,166 @@ data:
     <!DOCTYPE html>
     <html lang="en">
     <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Project Demo</title>
-      <style>
-        body {
-          margin: 0;
-          height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .card {
-          text-align: center;
-          padding: 3rem 4rem;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 16px;
-          backdrop-filter: blur(10px);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        h1 {
-          color: #e94560;
-          font-size: 1.8rem;
-          margin: 0 0 1rem 0;
-          letter-spacing: 1px;
-        }
-        p {
-          color: #eaeaea;
-          font-size: 1.3rem;
-          margin: 0;
-          line-height: 1.6;
-        }
-        .name {
-          color: #00d9ff;
-          font-weight: 700;
-          letter-spacing: 1px;
-        }
-      </style>
+        <title>Ephraim Nii Ofei Darku | DevOps Engineer</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Ephraim Nii Ofei Darku - DevOps Engineer specializing in scalable infrastructure, automation, CI/CD, Docker, Kubernetes, and Terraform.">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html, body {
+                height: 100vh;
+                overflow: hidden;
+                background: #ffffff;
+                color: #1e1e1e;
+                font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            }
+            body {
+                display: flex;
+                flex-direction: column;
+                font-size: 1.8vh;
+                padding: 1.5vh 3vh;
+            }
+            header {
+                height: 14vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+                border-bottom: 1px solid #aaa;
+            }
+            h1 {
+                font-size: 5vh;
+                font-weight: 600;
+                letter-spacing: 1px;
+                line-height: 1.2;
+                color: #000;
+            }
+            .tagline {
+                font-size: 2.3vh;
+                color: #333;
+                margin-top: 0.5vh;
+                font-weight: 300;
+                letter-spacing: 0.5px;
+            }
+            main {
+                height: 74vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+            }
+            section {
+                margin: 1.5vh 0;
+            }
+            h2 {
+                font-size: 3.2vh;
+                margin-bottom: 0.8vh;
+                color: #000;
+                font-weight: 500;
+                border-bottom: 1px solid #888;
+                display: inline-block;
+                padding-bottom: 0.3vh;
+            }
+            p {
+                font-size: 2.1vh;
+                line-height: 1.45;
+                margin-bottom: 1vh;
+                max-width: 90%;
+                margin-left: auto;
+                margin-right: auto;
+                color: #222;
+            }
+            ul {
+                list-style: none;
+                font-size: 2.1vh;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8vh 2vh;
+                max-width: 80%;
+                margin: 0.8vh auto 0;
+            }
+            li {
+                background: #f2f2f2;
+                color: #111;
+                padding: 0.8vh 1.2vh;
+                border-radius: 2.2vh;
+                border-left: 3px solid #444;
+                font-weight: 400;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                transition: 0.1s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            li:hover {
+                background: #e6e6e6;
+                border-left-color: #111;
+            }
+            #contact p {
+                background: #f0f0f0;
+                padding: 0.8vh 1.5vh;
+                border-radius: 3vh;
+                display: inline-block;
+                border: 1px solid #5a5a5a;
+                font-weight: 400;
+                margin-top: 0.5vh;
+                color: #111;
+            }
+            footer {
+                height: 8vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.9vh;
+                color: #444;
+                border-top: 1px solid #aaa;
+            }
+            @media (max-height: 400px) {
+                body { font-size: 14px; }
+                h1 { font-size: 2.2rem; }
+            }
+        </style>
     </head>
     <body>
-      <div class="card">
-        <h1>GitOps Homelab Project</h1>
-        <p>This is a project demonstration by <span class="name">EPHRAIM NII OFEI DARKU</span></p>
-      </div>
+    <header>
+        <h1>Ephraim Nii Ofei Darku</h1>
+        <p class="tagline">DevOps Engineer | Automation • Scalability • Reliability</p>
+    </header>
+    <main>
+    <section id="about">
+        <h2>About Me</h2>
+        <p>
+            I believe the best deployments are the ones nobody notices.
+            I design and automate scalable infrastructures that are secure, resilient, and built for growth.
+        </p>
+        <p>
+            Using Docker, Kubernetes, Terraform, and CI/CD pipelines, I transform complex environments
+            into streamlined systems that just work.
+        </p>
+    </section>
+    <section id="skills">
+        <h2>Core Skills</h2>
+        <ul>
+            <li>Cloud Platforms (AWS/Azure/GCP)</li>
+            <li>Infrastructure as Code (Terraform)</li>
+            <li>Containerization (Docker/K8s)</li>
+            <li>CI/CD Pipelines</li>
+            <li>Monitoring & Logging</li>
+            <li>Automation (Bash/Python)</li>
+        </ul>
+    </section>
+    <section id="contact">
+        <h2>Contact</h2>
+        <p>📧 niiidarku@gmail.com</p>
+    </section>
+    </main>
+    <footer>
+        <p>© 2026 Ephraim Nii Ofei Darku. All Rights Reserved.</p>
+    </footer>
     </body>
     </html>
+```
