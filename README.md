@@ -230,12 +230,15 @@ cd ansible
 ansible-playbook -i inventory.ini playbook-k3s-install.yml
 ```
 
-After successful execution, set up kubeconfig on your local workstation:
+After successful execution, set up kubeconfig on your local workstation. K3s writes `127.0.0.1` as the server address by default — rewrite it to your VM's IP before copying:
 
 ```bash
+sed -i 's/127.0.0.1/192.168.1.100/' ansible/kubeconfig
 cp ansible/kubeconfig ~/.kube/config
 kubectl get nodes
 ```
+
+> Replace `192.168.1.100` with your VM's actual static IP.
 
 Expected result: Your single node appears with `Ready` status.
 
