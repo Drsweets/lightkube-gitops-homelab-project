@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: whoami-demo-html
+  namespace: default
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Project Demo</title>
+      <style>
+        body {
+          margin: 0;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+          text-align: center;
+          padding: 3rem 4rem;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+          backdrop-filter: blur(10px);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+          color: #e94560;
+          font-size: 1.8rem;
+          margin: 0 0 1rem 0;
+          letter-spacing: 1px;
+        }
+        p {
+          color: #eaeaea;
+          font-size: 1.3rem;
+          margin: 0;
+          line-height: 1.6;
+        }
+        .name {
+          color: #00d9ff;
+          font-weight: 700;
+          letter-spacing: 1px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h1>GitOps Homelab Project</h1>
+        <p>This is a project demonstration by <span class="name">EPHRAIM NII OFEI DARKU</span></p>
+      </div>
+    </body>
+    </html>
