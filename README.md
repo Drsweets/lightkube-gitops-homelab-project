@@ -34,7 +34,7 @@ sudo apt update && sudo apt install -y yamllint curl
 
 curl -sL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.4.3/kustomize_v5.4.3_linux_amd64.tar.gz" | sudo tar xz -C /usr/local/bin
 
-pip install ansible-core
+sudo apt install -y ansible-core or pip install ansible-core --break-system-packages
 
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 chmod +x kubectl && sudo mv kubectl /usr/local/bin/
