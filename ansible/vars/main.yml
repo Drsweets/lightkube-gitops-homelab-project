@@ -2,5 +2,10 @@ k3s_version: v1.30.2+k3s1
 k3s_server_args: >-
   --disable traefik
   --tls-san 192.168.1.100
-containerd_mirror: true
+
+# Set to true only if your node has poor/blocked connectivity to Docker Hub
+# (e.g. mainland China) and needs a registry mirror + China-based install script.
+containerd_mirror: false
 containerd_mirror_endpoint: "https://docker.m.daocloud.io"
+k3s_install_url: "https://get.k3s.io"
+k3s_install_url_china: "https://rancher-mirror.rancher.cn/k3s/k3s-install.sh"
